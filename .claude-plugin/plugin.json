@@ -1,0 +1,10 @@
+{
+  "name": "superralph",
+  "description": "Unified development powerhouse: Superpowers discipline meets Ralph Loop autonomous execution. From brainstorming to merged code in one plugin.",
+  "version": "1.0.0",
+  "author": {
+    "name": "FutuSHI"
+  },
+  "license": "MIT",
+  "keywords": ["skills", "tdd", "ralph", "autonomous", "prd", "brainstorming", "code-review", "workflows"]
+}

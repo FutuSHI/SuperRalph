@@ -1,0 +1,14 @@
+# OS files
+.DS_Store
+
+# Runtime state (user-specific, not part of the plugin)
+.claude/superralph-state.json
+.claude/superralph-instructions.md
+.superralph/
+
+# Archives (user-specific)
+archive/
+
+# User project files
+tasks/prd.json
+tasks/progress.txt

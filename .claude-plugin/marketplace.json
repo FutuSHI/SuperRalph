@@ -1,0 +1,21 @@
+{
+  "name": "superralph",
+  "owner": {
+    "name": "FutuSHI"
+  },
+  "metadata": {
+    "description": "Unified development powerhouse: Superpowers discipline meets Ralph Loop autonomous execution",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "superralph",
+      "source": "./",
+      "description": "From brainstorming to merged code in one plugin. TDD, verification, code review, and autonomous PRD-driven execution.",
+      "version": "1.0.0",
+      "keywords": ["skills", "tdd", "ralph", "autonomous", "prd", "brainstorming", "code-review", "workflows", "superpowers"],
+      "category": "productivity",
+      "skills": "./skills/"
+    }
+  ]
+}

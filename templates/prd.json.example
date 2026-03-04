@@ -1,0 +1,59 @@
+{
+  "project": "ExampleApp",
+  "branchName": "superralph/task-status",
+  "description": "Task Status Feature - Track task progress with status indicators",
+  "designDoc": "docs/plans/2026-03-04-task-status-design.md",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Add status field to tasks table",
+      "description": "As a developer, I need to store task status in the database.",
+      "acceptanceCriteria": [
+        "Add status column: 'pending' | 'in_progress' | 'done' (default 'pending')",
+        "Write failing test for status field before implementation",
+        "Generate and run migration successfully",
+        "All tests pass",
+        "Typecheck passes",
+        "Verification evidence provided"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Display status badge on task cards",
+      "description": "As a user, I want to see task status at a glance.",
+      "acceptanceCriteria": [
+        "Each task card shows colored status badge (red=high, blue=in_progress, green=done)",
+        "Write failing test for badge rendering before implementation",
+        "Badge visible without hovering or clicking",
+        "All tests pass",
+        "Typecheck passes",
+        "Verification evidence provided",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Add status toggle to task list",
+      "description": "As a user, I want to change task status directly from the list.",
+      "acceptanceCriteria": [
+        "Each row has status dropdown or toggle",
+        "Write failing test for status change before implementation",
+        "Changing status saves immediately",
+        "UI updates without page refresh",
+        "All tests pass",
+        "Typecheck passes",
+        "Verification evidence provided",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}
