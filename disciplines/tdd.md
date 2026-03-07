@@ -82,3 +82,12 @@ These cases MAY skip TDD (but note the skip in your progress report):
 - Documentation-only changes
 
 For anything with logic: TDD. No exceptions.
+
+## Testing Anti-Patterns
+
+See `disciplines/testing-anti-patterns.md` for common mistakes that undermine test value:
+- Testing mock behavior instead of real behavior
+- Test-only methods in production code
+- Mocking without understanding the dependency
+- Incomplete mocks that hide bugs
+- Testing implementation details instead of behavior
