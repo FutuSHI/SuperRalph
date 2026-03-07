@@ -1,0 +1,102 @@
+{
+  "project": "SuperRalph",
+  "branchName": "superralph/v2-subagent-architecture",
+  "description": "Phase 2: Make the subagent architecture actually functional. Fix --agents CLI integration, path resolution, documentation accuracy, and hook-loop parity.",
+  "designDoc": "docs/plans/2026-03-07-v2-subagent-architecture-design.md",
+  "userStories": [
+    {
+      "id": "US-101",
+      "title": "Update ralph.sh to register custom agents via --agents flag",
+      "description": "As a SuperRalph user, I want ralph.sh to register implementer, spec-reviewer, and code-quality-reviewer as custom agents so that the orchestrator can spawn them via the Agent tool.",
+      "acceptanceCriteria": [
+        "ralph.sh reads agent prompt files from $PLUGIN_DIR/agents/ directory (implementer-prompt.md, spec-reviewer-prompt.md, code-quality-reviewer-prompt.md)",
+        "ralph.sh builds a JSON object for the --agents flag with three agents: implementer, spec-reviewer, code-quality-reviewer",
+        "Each agent definition includes description and prompt fields populated from the agent prompt files",
+        "The claude command in the main loop includes --agents with the built JSON",
+        "Agent prompt content is properly escaped for JSON embedding (newlines, quotes)",
+        "ralph.sh passes shellcheck with no errors",
+        "ralph.sh passes bash -n syntax check"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Use jq to build the JSON safely (handles escaping). The --agents flag format is: '{\"name\": {\"description\": \"...\", \"prompt\": \"...\"}}'."
+    },
+    {
+      "id": "US-102",
+      "title": "Update CLAUDE.md.template to use subagent_type instead of file paths",
+      "description": "As a SuperRalph orchestrator, I want the template to reference agents by subagent_type name so that the Agent tool can dispatch them without needing file paths.",
+      "acceptanceCriteria": [
+        "Replace 'Read agents/implementer-prompt.md from the plugin directory' with 'Use the Agent tool with subagent_type=implementer'",
+        "Replace 'Read agents/spec-reviewer-prompt.md from the plugin directory' with 'Use the Agent tool with subagent_type=spec-reviewer'",
+        "Replace 'Read agents/code-quality-reviewer-prompt.md from the plugin directory' with 'Use the Agent tool with subagent_type=code-quality-reviewer'",
+        "No file path references to agents/ directory remain in the template",
+        "All discipline placeholders still work ({TDD_DISCIPLINE} etc.)",
+        "The <promise>COMPLETE</promise> stop signal is preserved"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "The --agents flag registers these agent types at the CLI level, so the orchestrator just references them by name."
+    },
+    {
+      "id": "US-103",
+      "title": "Fix sub-technique discipline references to use inline content",
+      "description": "As a SuperRalph iteration agent, I need sub-technique content available inline so that references like 'See disciplines/root-cause-tracing.md' actually work.",
+      "acceptanceCriteria": [
+        "Add new placeholders to CLAUDE.md.template: {ROOT_CAUSE_TRACING}, {DEFENSE_IN_DEPTH}, {TESTING_ANTI_PATTERNS}",
+        "Update ralph.sh build_instructions() to replace these placeholders with file contents from disciplines/",
+        "Update debugging.md references from 'See disciplines/root-cause-tracing.md' to 'See the Root Cause Tracing section below' (since content will be inline)",
+        "Update debugging.md references from 'See disciplines/defense-in-depth.md' to 'See the Defense in Depth section below'",
+        "Update tdd.md references from 'See disciplines/testing-anti-patterns.md' to 'See the Testing Anti-Patterns section below'",
+        "ralph.sh passes shellcheck with no errors"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Same pattern as existing discipline injection. Add sub-sections under the parent discipline sections."
+    },
+    {
+      "id": "US-104",
+      "title": "Update stop-hook.sh to include subagent instructions in prompt",
+      "description": "As a hook-loop user, I want the continuation prompt to instruct the agent to use subagents so that hook-loop has the same subagent behavior as bash-loop.",
+      "acceptanceCriteria": [
+        "stop-hook.sh prompt includes instructions to use Agent tool with subagent_type for implementer, spec-reviewer, and code-quality-reviewer",
+        "Instructions match the subagent pipeline from CLAUDE.md.template (implementer -> spec review -> code quality review)",
+        "Include fix-and-review cycle instructions (max 2 cycles)",
+        "stop-hook.sh passes shellcheck with no errors",
+        "stop-hook.sh passes bash -n syntax check"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "The hook-loop can't register --agents at the CLI level since it runs within an existing session. But the existing session should already have Agent tool available. The prompt just needs to instruct usage."
+    },
+    {
+      "id": "US-105",
+      "title": "Fix README.md accuracy issues",
+      "description": "As a potential user, I want the README to accurately describe dependencies and credits so that I can trust the documentation.",
+      "acceptanceCriteria": [
+        "Remove or update 'No dependencies' claim to mention jq and perl as requirements",
+        "Fix Superpowers credit URL to point to the correct repository (github.com/obra/superpowers, not superpower-chatgpt)",
+        "Add a Prerequisites section listing: claude CLI, jq, perl",
+        "Note that banner.jpg is a placeholder in the assets/ directory",
+        "Remove or clarify 'dev-browser skill' references — note it requires a browser automation tool"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "The README currently claims zero dependencies but the scripts require jq and perl."
+    },
+    {
+      "id": "US-106",
+      "title": "Update DEVELOPMENT.md for v2.0 changes",
+      "description": "As a maintainer, I want DEVELOPMENT.md to reflect the v2.0 architecture so that the handoff document is accurate.",
+      "acceptanceCriteria": [
+        "Update file structure diagram to include agents/ directory, sub-technique files, find-polluter.sh, docs/plans/",
+        "Update discipline count from 5 to 8 (add root-cause-tracing, defense-in-depth, testing-anti-patterns)",
+        "Add section describing the subagent architecture (--agents flag, three agent types)",
+        "Update version references from 1.0.0 to 2.0.0",
+        "Add the --agents CLI integration to the bash-loop architecture description"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "DEVELOPMENT.md is the handoff document for future maintainers."
+    }
+  ]
+}

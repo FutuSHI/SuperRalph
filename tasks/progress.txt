@@ -1,0 +1,125 @@
+# SuperRalph Progress Log
+Started: 2026-03-07 14:00
+Feature: v2-subagent-architecture
+Design Doc: docs/plans/2026-03-07-v2-subagent-architecture-design.md
+---
+
+## Codebase Patterns
+
+- ralph.sh uses perl for placeholder replacement (replace_placeholder function). Use the same approach for any text substitution to maintain consistency and cross-platform compatibility.
+- Discipline files are in disciplines/ directory. They are injected into CLAUDE.md.template via {PLACEHOLDER} syntax.
+- Hook scripts must use CLAUDE_PLUGIN_ROOT or derive plugin directory for portable file references.
+- All shell scripts should pass shellcheck validation.
+- Use `${var##*/}` for portable path basename extraction instead of `echo | sed`.
+- For hook scripts, use `${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}` to portably locate the plugin directory.
+- Use `read_discipline()` helper pattern: try file first, fall back to inline string.
+- Agent prompt templates live in agents/ directory. Referenced by CLAUDE.md.template.
+- Sub-technique discipline files are referenced from the main discipline file (e.g., debugging.md links to root-cause-tracing.md).
+
+---
+
+## 2026-03-07 - US-001: Fix ralph.sh cross-platform sed compatibility
+- Replaced macOS-specific `sed -i ''` with `perl -i -pe` for DESIGN_DOC placeholder
+- Fixed shellcheck SC2001: `${var##*/}` instead of `echo | sed`
+- Files: scripts/ralph.sh | shellcheck: PASS | bash -n: OK
+---
+
+## 2026-03-07 - US-002: Fix hook-loop discipline injection to read from files
+- Rewrote hooks/stop-hook.sh to read discipline files instead of hardcoded summary
+- Added `read_discipline()` with fallback, conditional web discipline loading
+- Files: hooks/stop-hook.sh | shellcheck: PASS | bash -n: OK
+---
+
+## 2026-03-07 - US-003: Create implementer agent prompt template
+- Created agents/implementer-prompt.md with TDD enforcement, anti-rationalization table, structured output format
+- Files: agents/implementer-prompt.md | Documentation only (TDD exception)
+---
+
+## 2026-03-07 - US-004: Create spec-reviewer agent prompt template
+- Created agents/spec-reviewer-prompt.md with skeptical stance, line-by-line criterion checking, PASS/FAIL verdict
+- Files: agents/spec-reviewer-prompt.md | Documentation only
+---
+
+## 2026-03-07 - US-005: Create code-quality-reviewer agent prompt template
+- Created agents/code-quality-reviewer-prompt.md with 4 dimensions, Critical/Important/Minor categorization, 3-tier verdict
+- Files: agents/code-quality-reviewer-prompt.md | Documentation only
+---
+
+## 2026-03-07 - US-006: Update CLAUDE.md.template to use subagent execution model
+- Transformed template from self-implementing to orchestrator model with 3 subagents
+- Added fix-and-review cycles (max 2), preserved all placeholders and stop signal
+- Files: templates/CLAUDE.md.template
+---
+
+## 2026-03-07 - US-007: Create debugging sub-technique: root-cause-tracing
+- Created disciplines/root-cause-tracing.md with backward tracing technique and worked example
+- Updated debugging.md Phase 1 to reference it
+- Files: disciplines/root-cause-tracing.md, disciplines/debugging.md
+---
+
+## 2026-03-07 - US-008: Create debugging sub-technique: defense-in-depth
+- Created disciplines/defense-in-depth.md with layer boundary validation and when-to/when-not-to table
+- Updated debugging.md Phase 4 to reference it
+- Files: disciplines/defense-in-depth.md, disciplines/debugging.md
+---
+
+## 2026-03-07 - US-009: Create testing-anti-patterns reference and update TDD discipline
+- Created disciplines/testing-anti-patterns.md with 5 anti-patterns (testing mocks, test-only methods, blind mocking, incomplete mocks, implementation testing)
+- Updated tdd.md to reference anti-patterns file
+- Files: disciplines/testing-anti-patterns.md, disciplines/tdd.md
+---
+
+## 2026-03-07 - US-010: Create find-polluter.sh test isolation script
+- Created scripts/find-polluter.sh with binary search, jest/pytest support, auto-detection
+- Files: scripts/find-polluter.sh | shellcheck: PASS | bash -n: OK
+---
+
+## 2026-03-07 - US-011: Update /run skill and plugin CLAUDE.md for subagent model
+- Updated /run skill to describe subagent pipeline
+- Updated CLAUDE.md to reflect independent agent review
+- Bumped version to 2.0.0
+- Updated two-stage-review.md to reference subagent mode
+- Files: skills/run/SKILL.md, CLAUDE.md, .claude-plugin/plugin.json, .claude-plugin/marketplace.json, disciplines/two-stage-review.md
+---
+
+## 2026-03-07 - US-102: Update CLAUDE.md.template to use subagent_type instead of file paths
+- Replaced file path references (Read agents/*.md) with Agent tool subagent_type dispatch
+- Verified: no agents/ file path references remain, all discipline placeholders intact, stop signal preserved
+- Files: templates/CLAUDE.md.template
+- Review: Spec PASS (no agents/ refs, placeholders work, stop signal present), Code quality PASS
+---
+
+## 2026-03-07 - US-103: Fix sub-technique discipline references to use inline content
+- Added {ROOT_CAUSE_TRACING}, {DEFENSE_IN_DEPTH}, {TESTING_ANTI_PATTERNS} placeholders to CLAUDE.md.template
+- Updated ralph.sh build_instructions() with 3 new replace_placeholder calls
+- Updated debugging.md: file path refs → "See the X section below"
+- Updated tdd.md: file path ref → "See the Testing Anti-Patterns section below"
+- Files: templates/CLAUDE.md.template, scripts/ralph.sh, disciplines/debugging.md, disciplines/tdd.md
+- Verification: shellcheck PASS, bash -n PASS, no file path refs remain
+---
+
+## 2026-03-07 - US-104: Update stop-hook.sh to include subagent instructions in prompt
+- Added Subagent Pipeline section with 3 agent types: implementer, spec-reviewer, code-quality-reviewer
+- Includes fix-and-review cycle instructions (max 2 cycles) matching CLAUDE.md.template
+- Files: hooks/stop-hook.sh
+- Verification: shellcheck PASS, bash -n PASS
+---
+
+## 2026-03-07 - US-105: Fix README.md accuracy issues
+- Removed "zero-dependency" and "No dependencies" claims
+- Added Prerequisites section: claude CLI, jq, perl
+- Fixed Superpowers URL: superpower-chatgpt → superpowers
+- Added note that banner.jpg is a placeholder
+- No dev-browser references existed in README (already clean)
+- Files: README.md
+---
+
+## 2026-03-07 - US-106: Update DEVELOPMENT.md for v2.0 changes
+- Updated file structure: added agents/, sub-technique files, find-polluter.sh, docs/plans/
+- Updated discipline count from 5 to 8 (added root-cause-tracing, defense-in-depth, testing-anti-patterns)
+- Added Subagent 架构 section: --agents flag, 3 agent types, pipeline description
+- Updated version from 1.0.0 to 2.0.0
+- Added --agents CLI integration to bash-loop description
+- Updated hook-loop section to reflect file-based discipline reading
+- Files: DEVELOPMENT.md
+---
