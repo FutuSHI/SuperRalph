@@ -85,7 +85,7 @@ For anything with logic: TDD. No exceptions.
 
 ## Testing Anti-Patterns
 
-See `disciplines/testing-anti-patterns.md` for common mistakes that undermine test value:
+See the Testing Anti-Patterns section below for common mistakes that undermine test value:
 - Testing mock behavior instead of real behavior
 - Test-only methods in production code
 - Mocking without understanding the dependency

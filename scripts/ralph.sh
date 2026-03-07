@@ -293,6 +293,9 @@ build_instructions() {
   replace_placeholder "$INSTRUCTIONS_FILE" "{VERIFICATION_DISCIPLINE}" "$PLUGIN_DIR/disciplines/verification.md"
   replace_placeholder "$INSTRUCTIONS_FILE" "{REVIEW_DISCIPLINE}" "$PLUGIN_DIR/disciplines/two-stage-review.md"
   replace_placeholder "$INSTRUCTIONS_FILE" "{DEBUGGING_DISCIPLINE}" "$PLUGIN_DIR/disciplines/debugging.md"
+  replace_placeholder "$INSTRUCTIONS_FILE" "{ROOT_CAUSE_TRACING}" "$PLUGIN_DIR/disciplines/root-cause-tracing.md"
+  replace_placeholder "$INSTRUCTIONS_FILE" "{DEFENSE_IN_DEPTH}" "$PLUGIN_DIR/disciplines/defense-in-depth.md"
+  replace_placeholder "$INSTRUCTIONS_FILE" "{TESTING_ANTI_PATTERNS}" "$PLUGIN_DIR/disciplines/testing-anti-patterns.md"
 
   # Web discipline: inject or remove
   if [ "$WEB_PROJECT" = true ]; then

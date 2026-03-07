@@ -77,6 +77,18 @@ These disciplines are injected into the implementer subagent's context and also 
 
 {DEBUGGING_DISCIPLINE}
 
+#### Root Cause Tracing
+
+{ROOT_CAUSE_TRACING}
+
+#### Defense in Depth
+
+{DEFENSE_IN_DEPTH}
+
+### Testing Anti-Patterns
+
+{TESTING_ANTI_PATTERNS}
+
 {WEB_DISCIPLINE}
 
 ## Progress Report Format
