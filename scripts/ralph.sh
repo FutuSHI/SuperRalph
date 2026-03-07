@@ -150,7 +150,8 @@ archive_if_branch_changed() {
 
       local date_prefix
       date_prefix="$(date '+%Y-%m-%d')"
-      local archive_name="${date_prefix}-${FEATURE_NAME:-$(echo "$last_branch" | sed 's|.*/||')}"
+      local clean_branch="${last_branch##*/}"
+      local archive_name="${date_prefix}-${FEATURE_NAME:-$clean_branch}"
       local archive_dir="$PROJECT_DIR/archive/$archive_name"
 
       mkdir -p "$archive_dir"
@@ -267,7 +268,7 @@ build_instructions() {
   # Replace design doc path
   local design_doc
   design_doc="$(jq -r '.designDoc // "N/A"' "$PROJECT_DIR/tasks/prd.json" 2>/dev/null || echo "N/A")"
-  sed -i '' "s|{DESIGN_DOC}|$design_doc|g" "$INSTRUCTIONS_FILE"
+  perl -i -pe "s|\\{DESIGN_DOC\\}|$design_doc|g" "$INSTRUCTIONS_FILE"
 }
 
 # ── Main ──────────────────────────────────────────────────────
