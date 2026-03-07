@@ -35,6 +35,7 @@ If you haven't completed Phase 1, you cannot propose fixes. Guessing wastes iter
 1. **Write a failing test** that reproduces the bug (simplest possible reproduction)
 2. **Implement the fix** — address the root cause identified in Phase 1-3, ONE change
 3. **Verify the fix** — test passes? Other tests still pass? Issue actually resolved?
+4. **Add defensive checks** — Would boundary validation have caught this earlier? If yes, add it. (See `disciplines/defense-in-depth.md` for the full strategy.)
 
 ## The 3-Fix Rule
 
