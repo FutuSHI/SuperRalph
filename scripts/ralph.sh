@@ -228,6 +228,55 @@ replace_placeholder() {
   fi
 }
 
+# ── Build Agent Definitions JSON ──────────────────────────────
+build_agents_json() {
+  local agents_dir="$PLUGIN_DIR/agents"
+  local impl_file="$agents_dir/implementer-prompt.md"
+  local spec_file="$agents_dir/spec-reviewer-prompt.md"
+  local quality_file="$agents_dir/code-quality-reviewer-prompt.md"
+
+  # Read agent prompt files (fall back to minimal prompts if missing)
+  local impl_prompt spec_prompt quality_prompt
+
+  if [ -f "$impl_file" ]; then
+    impl_prompt="$(cat "$impl_file")"
+  else
+    impl_prompt="Implement the given user story with strict TDD discipline."
+  fi
+
+  if [ -f "$spec_file" ]; then
+    spec_prompt="$(cat "$spec_file")"
+  else
+    spec_prompt="Review the implementation for spec compliance. Check each acceptance criterion."
+  fi
+
+  if [ -f "$quality_file" ]; then
+    quality_prompt="$(cat "$quality_file")"
+  else
+    quality_prompt="Review the code for correctness, cleanliness, consistency, and security."
+  fi
+
+  # Use jq to safely build JSON with proper escaping
+  AGENTS_JSON=$(jq -n \
+    --arg impl_prompt "$impl_prompt" \
+    --arg spec_prompt "$spec_prompt" \
+    --arg quality_prompt "$quality_prompt" \
+    '{
+      "implementer": {
+        "description": "Implements one user story with strict TDD discipline (RED-GREEN-REFACTOR)",
+        "prompt": $impl_prompt
+      },
+      "spec-reviewer": {
+        "description": "Reviews implementation for spec compliance - nothing missing, nothing extra",
+        "prompt": $spec_prompt
+      },
+      "code-quality-reviewer": {
+        "description": "Reviews code quality - correctness, cleanliness, consistency, security",
+        "prompt": $quality_prompt
+      }
+    }')
+}
+
 # ── Build Per-Iteration Instructions ──────────────────────────
 build_instructions() {
   local template="$PLUGIN_DIR/templates/CLAUDE.md.template"
@@ -307,6 +356,11 @@ main() {
   # Ensure cleanup on exit
   trap 'rm -f "$INSTRUCTIONS_FILE"' EXIT
 
+  # Build agent definitions (once, agent prompts don't change between iterations)
+  build_agents_json
+  echo "  Agents:         implementer, spec-reviewer, code-quality-reviewer"
+  echo ""
+
   # ── Main Loop ─────────────────────────────────────────────
   for i in $(seq 1 "$MAX_ITERATIONS"); do
     echo ""
@@ -317,8 +371,10 @@ main() {
     # Rebuild instructions each iteration (disciplines may have been updated)
     build_instructions
 
-    # Run Claude Code with assembled instructions
-    OUTPUT=$(claude --dangerously-skip-permissions --print < "$INSTRUCTIONS_FILE" 2>&1 | tee /dev/stderr) || true
+    # Run Claude Code with assembled instructions and registered agents
+    OUTPUT=$(claude --dangerously-skip-permissions --print \
+      --agents "$AGENTS_JSON" \
+      < "$INSTRUCTIONS_FILE" 2>&1 | tee /dev/stderr) || true
 
     # Check for completion signal
     if echo "$OUTPUT" | grep -q "<promise>COMPLETE</promise>"; then
