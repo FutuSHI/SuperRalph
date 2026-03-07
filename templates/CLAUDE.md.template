@@ -21,20 +21,19 @@ For each story, execute this three-agent pipeline:
 
 ### Step 1: Implementer Subagent
 
-Read `agents/implementer-prompt.md` from the plugin directory. Use the **Agent tool** to spawn an implementer subagent with:
+Use the **Agent tool** with `subagent_type="implementer"` to spawn an implementer subagent. Include in the prompt:
 - The story (ID, title, description, acceptance criteria from prd.json)
 - The design doc path for architectural context
 - The Codebase Patterns section from progress.txt
-- The full TDD discipline below
 
-The implementer will return: files changed, tests written, verification evidence.
+The implementer agent has TDD discipline built into its prompt. It will return: files changed, tests written, verification evidence.
 
 ### Step 2: Spec Reviewer Subagent
 
-Read `agents/spec-reviewer-prompt.md` from the plugin directory. Use the **Agent tool** to spawn a spec reviewer subagent with:
-- The story acceptance criteria
-- The implementer's report
-- Instruction to check the actual code changes (git diff)
+Use the **Agent tool** with `subagent_type="spec-reviewer"` to spawn a spec reviewer subagent. Include in the prompt:
+- The story acceptance criteria (copy them verbatim)
+- The implementer's report (what they claim to have done)
+- Instruction to verify by reading actual code changes (`git diff`)
 
 **If FAIL**: Read the reviewer's specific feedback, fix the issues yourself, then re-submit for spec review. Maximum 2 fix-and-review cycles. If still failing after 2 cycles, leave the story as `passes: false` with detailed notes.
 
@@ -42,9 +41,9 @@ Read `agents/spec-reviewer-prompt.md` from the plugin directory. Use the **Agent
 
 **Only proceed here after spec review PASSES.**
 
-Read `agents/code-quality-reviewer-prompt.md` from the plugin directory. Use the **Agent tool** to spawn a code quality reviewer subagent with:
-- The code changes (git diff)
-- The codebase context
+Use the **Agent tool** with `subagent_type="code-quality-reviewer"` to spawn a code quality reviewer subagent. Include in the prompt:
+- Summary of what was changed and why
+- Instruction to review the actual code changes (`git diff`)
 
 **If FAIL (Critical issues)**: Fix the critical issues yourself, then re-submit for code quality review. Maximum 2 fix-and-review cycles.
 
