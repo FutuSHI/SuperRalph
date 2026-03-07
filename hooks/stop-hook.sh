@@ -145,6 +145,23 @@ fi
 
 PROMPT="$PROMPT
 
+## Subagent Pipeline
+
+For each story, execute this three-agent pipeline:
+
+### Step 1: Implementer Subagent
+Use the **Agent tool** with subagent_type=\"implementer\" to spawn an implementer subagent. Include the story details, design doc path, and Codebase Patterns in the prompt.
+
+### Step 2: Spec Reviewer Subagent
+Use the **Agent tool** with subagent_type=\"spec-reviewer\" to spawn a spec reviewer subagent. Include acceptance criteria and the implementer's report.
+If FAIL: Fix issues yourself, then re-submit for spec review. Maximum 2 fix-and-review cycles.
+
+### Step 3: Code Quality Reviewer Subagent
+Only proceed after spec review PASSES.
+Use the **Agent tool** with subagent_type=\"code-quality-reviewer\" to spawn a code quality reviewer subagent. Include summary of changes.
+If FAIL (Critical): Fix critical issues, re-submit. Maximum 2 cycles.
+If PASS WITH NOTES: Fix if straightforward, otherwise note for future.
+
 ## Progress Report
 APPEND to tasks/progress.txt after completing the story.
 
