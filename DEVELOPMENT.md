@@ -70,14 +70,24 @@ SuperRalph/
 │   ├── finish/SKILL.md      #   /finish — 收尾合并
 │   ├── debug/SKILL.md       #   /debug — 系统化调试
 │   └── cancel/SKILL.md      #   /cancel — 终止循环
-├── disciplines/             # 5 个纪律模块（被注入到每次迭代中）
+├── agents/                  # 3 个 subagent 提示模板
+│   ├── implementer-prompt.md #   实现者：TDD 驱动的代码实现
+│   ├── spec-reviewer-prompt.md #  规格审查：验收标准逐条检查
+│   └── code-quality-reviewer-prompt.md # 代码质量审查：正确性、清洁性、一致性、安全性
+├── disciplines/             # 8 个纪律模块（被注入到每次迭代中）
 │   ├── tdd.md               #   TDD 红绿重构纪律
 │   ├── verification.md      #   验证纪律（无证据不完成）
 │   ├── two-stage-review.md  #   两阶段审查纪律
 │   ├── debugging.md         #   系统化调试纪律
-│   └── web-enhance.md       #   Web 项目增强（条件加载）
+│   ├── web-enhance.md       #   Web 项目增强（条件加载）
+│   ├── root-cause-tracing.md #  根因追溯子技术（调试子模块）
+│   ├── defense-in-depth.md  #   纵深防御子技术（调试子模块）
+│   └── testing-anti-patterns.md # 测试反模式参考（TDD 子模块）
+├── docs/
+│   └── plans/               # 架构设计文档
 ├── scripts/
-│   └── ralph.sh             # bash-loop 执行引擎
+│   ├── ralph.sh             # bash-loop 执行引擎
+│   └── find-polluter.sh     # 测试污染二分查找工具
 ├── hooks/
 │   ├── hooks.json           # hook 注册配置
 │   ├── session-start.sh     # 会话启动时显示活跃状态
@@ -98,9 +108,10 @@ SuperRalph/
 由 `scripts/ralph.sh` 驱动。每次迭代：
 
 1. 从 `CLAUDE.md.template` 构建指令文件
-2. 将 5 个纪律模块的内容注入到占位符位置
+2. 将 8 个纪律模块的内容注入到占位符位置（含 3 个子技术模块）
 3. 检测 Web 项目类型，条件注入 web-enhance 纪律
-4. 调用 `claude --dangerously-skip-permissions --print` 执行一次迭代
+4. 构建 `--agents` JSON，注册 implementer、spec-reviewer、code-quality-reviewer 三个自定义 agent
+5. 调用 `claude --dangerously-skip-permissions --print --agents "$AGENTS_JSON"` 执行一次迭代
 5. 检查输出中的 `<promise>COMPLETE</promise>` 信号
 6. 未完成则继续下一轮迭代
 
@@ -130,14 +141,29 @@ SuperRalph/
 
 每轮迭代开始时，先读这三个文件，再开始工作。
 
-### 5 个纪律模块如何被注入
+### Subagent 架构（v2.0）
+
+v2.0 引入了 subagent 架构，将实现和审查分离为独立的 agent：
+
+| Agent | 职责 | 调度方式 |
+|-------|------|---------|
+| `implementer` | TDD 驱动的代码实现 | `Agent tool` + `subagent_type="implementer"` |
+| `spec-reviewer` | 验收标准逐条审查 | `Agent tool` + `subagent_type="spec-reviewer"` |
+| `code-quality-reviewer` | 代码质量四维审查 | `Agent tool` + `subagent_type="code-quality-reviewer"` |
+
+**注册机制**：`ralph.sh` 通过 `build_agents_json()` 函数读取 `agents/` 目录下的提示文件，构建 JSON 并通过 `--agents` CLI flag 传递给 `claude` 命令。编排器（orchestrator）在迭代中通过 `Agent tool` 按名称调度这些 agent。
+
+**流水线顺序**：implementer → spec-reviewer（FAIL 则修复重审，最多 2 轮）→ code-quality-reviewer（Critical FAIL 则修复重审，最多 2 轮）→ commit。
+
+### 8 个纪律模块如何被注入
 
 纪律模块不是 skill（不能被用户直接调用），而是**被注入到每次迭代的指令中**。注入机制如下：
 
-1. `templates/CLAUDE.md.template` 包含占位符：`{TDD_DISCIPLINE}`、`{VERIFICATION_DISCIPLINE}` 等
+1. `templates/CLAUDE.md.template` 包含占位符：`{TDD_DISCIPLINE}`、`{VERIFICATION_DISCIPLINE}`、`{ROOT_CAUSE_TRACING}`、`{DEFENSE_IN_DEPTH}`、`{TESTING_ANTI_PATTERNS}` 等
 2. `ralph.sh` 的 `build_instructions()` 函数用 `replace_placeholder()` 将占位符替换为 discipline 文件的完整内容
 3. Web 纪律（`{WEB_DISCIPLINE}`）是条件注入的——只在检测到 Web 项目时才替换，否则删除占位符
-4. 最终生成的指令文件包含所有适用纪律的完整文本
+4. 子技术模块（root-cause-tracing、defense-in-depth、testing-anti-patterns）作为父模块的子章节内联注入
+5. 最终生成的指令文件包含所有适用纪律的完整文本
 
 这种设计的好处：
 - 纪律内容可以独立维护和更新
@@ -222,13 +248,13 @@ SuperRalph/
 Superpowers 原有 13 个 skill，但许多是重叠或可合并的。精简原则：
 
 - **Skill（用户可调用的命令）**：保留直接面向用户的操作入口，共 7 个
-- **Discipline（被注入的纪律规则）**：提取为独立模块，共 5 个
+- **Discipline（被注入的纪律规则）**：提取为独立模块，共 8 个（5 个核心 + 3 个子技术）
 - 去掉了重复或边界不清的 skill
 - 将通用规则（如 TDD、验证）从 skill 中抽离，变成每次迭代自动注入的纪律
 
 **核心 7 个 skill**：superRalph、think、plan、run、finish、debug、cancel
 
-**核心 5 个 discipline**：tdd、verification、two-stage-review、debugging、web-enhance
+**8 个 discipline**：tdd、verification、two-stage-review、debugging、web-enhance、root-cause-tracing、defense-in-depth、testing-anti-patterns
 
 ### 为什么 bash-loop 是默认模式
 
@@ -257,13 +283,13 @@ bash-loop 作为默认推荐，因为大部分真实场景涉及 3 个以上 sto
 
 ## 5. 文件清单和用途
 
-共 24 个文件（含 README.md 和 .gitignore）：
+共 31 个文件（含 README.md 和 .gitignore）：
 
 ### 插件元数据（2 个）
 
 | 文件 | 用途 |
 |------|------|
-| `.claude-plugin/plugin.json` | 插件定义：名称 `superralph`、版本 `1.0.0`、作者 `FutuSHI`、MIT 许可 |
+| `.claude-plugin/plugin.json` | 插件定义：名称 `superralph`、版本 `2.0.0`、作者 `FutuSHI`、MIT 许可 |
 | `.claude-plugin/marketplace.json` | Marketplace 发布配置：分类 `productivity`、关键词、skill 目录指向 |
 
 ### Skill 命令（7 个）
@@ -278,7 +304,7 @@ bash-loop 作为默认推荐，因为大部分真实场景涉及 3 个以上 sto
 | `skills/debug/SKILL.md` | `/debug` | 系统化 4 阶段调试：根因调查 → 模式分析 → 假设验证 → 实现修复 |
 | `skills/cancel/SKILL.md` | `/cancel` | 安全终止执行循环，保留所有已完成工作 |
 
-### 纪律模块（5 个）
+### 纪律模块（8 个）
 
 | 文件 | 用途 |
 |------|------|
@@ -287,12 +313,24 @@ bash-loop 作为默认推荐，因为大部分真实场景涉及 3 个以上 sto
 | `disciplines/two-stage-review.md` | 两阶段审查：第一阶段检查规格符合性（不多不少），第二阶段检查代码质量 |
 | `disciplines/debugging.md` | 系统化调试：4 阶段（根因调查 → 模式分析 → 假设验证 → 实现修复）+ 3 次修复规则 |
 | `disciplines/web-enhance.md` | Web 项目增强：条件加载，自动检测 Web 框架，UI story 需浏览器验证 |
+| `disciplines/root-cause-tracing.md` | 根因追溯：从错误点逆向追踪数据流，找到第一个数据异常点 |
+| `disciplines/defense-in-depth.md` | 纵深防御：在层边界添加断言，fail-fast 策略 |
+| `disciplines/testing-anti-patterns.md` | 测试反模式参考：5 种常见错误（测试 mock、test-only 方法、盲目 mock 等） |
 
-### 执行引擎（3 个）
+### Subagent 提示模板（3 个）
 
 | 文件 | 用途 |
 |------|------|
-| `scripts/ralph.sh` | bash-loop 执行引擎：参数解析、Web 项目检测、纪律注入（占位符替换）、迭代循环、完成信号检测、归档机制 |
+| `agents/implementer-prompt.md` | 实现者 agent：TDD 强制执行，反合理化表，结构化输出格式 |
+| `agents/spec-reviewer-prompt.md` | 规格审查 agent：怀疑立场，逐条标准检查，PASS/FAIL 判定 |
+| `agents/code-quality-reviewer-prompt.md` | 代码质量审查 agent：四维审查，Critical/Important/Minor 分级，三级判定 |
+
+### 执行引擎（4 个）
+
+| 文件 | 用途 |
+|------|------|
+| `scripts/ralph.sh` | bash-loop 执行引擎：参数解析、Web 项目检测、纪律注入（占位符替换）、`--agents` 注册、迭代循环、完成信号检测、归档机制 |
+| `scripts/find-polluter.sh` | 测试污染二分查找工具：支持 jest/pytest，自动检测测试框架 |
 | `hooks/stop-hook.sh` | hook-loop 迭代控制器：拦截 Claude 退出信号，检查 story 完成状态，未完成则注入下一轮 prompt |
 | `hooks/session-start.sh` | 会话启动 hook：检测活跃的 SuperRalph 会话并显示状态信息 |
 
@@ -330,7 +368,7 @@ bash-loop 作为默认推荐，因为大部分真实场景涉及 3 个以上 sto
 /plugin install superralph@superralph
 ```
 
-无外部依赖，无需额外配置。
+需要预装 `jq` 和 `perl`（macOS/Linux 自带 perl）。
 
 ### 本地开发
 
@@ -399,12 +437,7 @@ bash-loop 作为默认推荐，因为大部分真实场景涉及 3 个以上 sto
 
 #### hook-loop 的纪律注入方式
 
-当前 hook-loop 模式中，纪律是通过简化版的 prompt 文本注入的（在 `stop-hook.sh` 中硬编码），而不是像 bash-loop 那样从文件中读取完整内容。这导致：
-
-- hook-loop 和 bash-loop 的纪律内容不同步
-- 修改 discipline 文件后，hook-loop 不会自动更新
-
-建议：让 `stop-hook.sh` 也读取 discipline 文件并构建完整的指令，或者使用和 `ralph.sh` 相同的 `build_instructions()` 机制。
+v2.0 中 `stop-hook.sh` 已改为从 discipline 文件中读取完整内容（使用 `read_discipline()` 辅助函数），并包含 subagent pipeline 指令。纪律内容与 bash-loop 保持同步。
 
 #### 迭代报告可视化
 

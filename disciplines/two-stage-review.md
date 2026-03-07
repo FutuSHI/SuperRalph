@@ -2,7 +2,7 @@
 
 ## Overview
 
-Before committing code for a completed story, perform a two-stage self-review. The order is mandatory and cannot be reversed.
+Before committing code for a completed story, perform a two-stage review. When running in subagent mode, this review is performed by independent reviewer agents. The order is mandatory and cannot be reversed.
 
 ## Stage 1: Spec Compliance Review
 

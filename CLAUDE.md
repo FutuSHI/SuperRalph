@@ -33,8 +33,8 @@ If you think there is even a 1% chance a SuperRalph skill applies to what you ar
 Every execution iteration enforces:
 1. **TDD** — Write failing test FIRST, then implement. Code before test = delete and restart.
 2. **Verification** — No completion claims without evidence. Run the command, paste the output.
-3. **Two-Stage Review** — Spec compliance first (nothing missing, nothing extra), then code quality.
-4. **Systematic Debugging** — 4 phases: root cause → pattern analysis → hypothesis → implementation. No guessing.
+3. **Independent Agent Review** — Implementation and review are performed by separate subagents: implementer, spec reviewer (nothing missing, nothing extra), and code quality reviewer (correctness, cleanliness, consistency, security).
+4. **Systematic Debugging** — 4 phases: root cause → pattern analysis → hypothesis → implementation. No guessing. Includes sub-techniques: root-cause-tracing, defense-in-depth.
 
 ## State
 

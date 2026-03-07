@@ -13,7 +13,7 @@ If you haven't completed Phase 1, you cannot propose fixes. Guessing wastes iter
 1. **Read error messages carefully.** They often contain the exact solution.
 2. **Reproduce consistently.** Can you trigger the failure reliably? What are the exact steps?
 3. **Check recent changes.** What changed since it last worked? `git diff`, recent commits, dependency updates.
-4. **Trace data flow.** Where does the bad value originate? What called this with the bad value? Keep tracing upstream until you find the source. Fix at the source, not at the symptom.
+4. **Trace data flow.** Where does the bad value originate? What called this with the bad value? Keep tracing upstream until you find the source. Fix at the source, not at the symptom. (See the Root Cause Tracing section below for the full backward-tracing technique.)
 
 ### Phase 2: Pattern Analysis
 
@@ -35,6 +35,7 @@ If you haven't completed Phase 1, you cannot propose fixes. Guessing wastes iter
 1. **Write a failing test** that reproduces the bug (simplest possible reproduction)
 2. **Implement the fix** — address the root cause identified in Phase 1-3, ONE change
 3. **Verify the fix** — test passes? Other tests still pass? Issue actually resolved?
+4. **Add defensive checks** — Would boundary validation have caught this earlier? If yes, add it. (See the Defense in Depth section below for the full strategy.)
 
 ## The 3-Fix Rule
 

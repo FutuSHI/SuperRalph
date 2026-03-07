@@ -65,15 +65,16 @@ Present two options:
 - Start executing: read prd.json, pick first incomplete story, implement with TDD discipline
 - The stop hook will handle iteration cycling
 
-### 5. What Happens Each Iteration
+### 5. What Happens Each Iteration (Subagent Pipeline)
 
 Explain to the user:
-1. Read prd.json → find next story where `passes: false`
-2. Read progress.txt for past learnings + design doc for architectural context
-3. TDD: Write failing test → verify RED → implement → verify GREEN → refactor
-4. Verification: Run checks, provide evidence
-5. Two-stage review: Spec compliance → code quality
-6. Commit + update prd.json + append progress.txt
-7. Web projects: Browser verification
-8. On failure: Systematic debugging (4 phases)
-9. All stories done → `<promise>COMPLETE</promise>`
+1. Read prd.json, progress.txt patterns, and design doc for context
+2. Find next story where `passes: false`
+3. **Spawn Implementer subagent** — implements the story with strict TDD (RED-GREEN-REFACTOR)
+4. **Spawn Spec Reviewer subagent** — independently verifies all acceptance criteria are met (nothing missing, nothing extra)
+5. **Spawn Code Quality Reviewer subagent** — checks correctness, cleanliness, consistency, security (categorizes issues as Critical/Important/Minor)
+6. If reviews fail: fix issues and re-review (max 2 cycles)
+7. Commit + update prd.json + append progress.txt
+8. Web projects: Browser verification
+9. On failure: Systematic debugging (4 phases)
+10. All stories done → `<promise>COMPLETE</promise>`
