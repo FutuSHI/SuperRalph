@@ -16,7 +16,7 @@ You install both. You love both. And then you spend the next hour figuring out h
 
 **We got tired of juggling two plugins.** So we fused them.
 
-SuperRalph takes the disciplined engineering rigor of Superpowers and the relentless autonomous execution of Ralph Loop, and welds them into a single zero-dependency plugin that just works.
+SuperRalph takes the disciplined engineering rigor of Superpowers and the relentless autonomous execution of Ralph Loop, and welds them into a single plugin that just works.
 
 ## Before vs After
 
@@ -49,7 +49,15 @@ Two commands. That's it.
 /plugin install superralph@superralph
 ```
 
-No dependencies. No config files. No YAML to maintain. Install and go.
+No config files. No YAML to maintain. Install and go.
+
+### Prerequisites
+
+- **[Claude CLI](https://docs.anthropic.com/en/docs/claude-code)** — Claude Code must be installed
+- **[jq](https://jqlang.github.io/jq/)** — Used for JSON processing in scripts
+- **[perl](https://www.perl.org/)** — Used for template placeholder replacement (pre-installed on macOS/Linux)
+
+> **Note:** The banner image (`assets/banner.jpg`) is a placeholder — replace it with your own project banner.
 
 ## What Happens When You Type `/superRalph`
 
@@ -128,7 +136,7 @@ If the loop crashes mid-execution, resume from exactly where it stopped. `/cance
 
 SuperRalph stands on the shoulders of two excellent projects:
 
-- **[Superpowers](https://github.com/obra/superpower-chatgpt)** by [obra](https://github.com/obra) — The development discipline engine: TDD, code review, verification, systematic debugging
+- **[Superpowers](https://github.com/obra/superpowers)** by [obra](https://github.com/obra) — The development discipline engine: TDD, code review, verification, systematic debugging
 - **[Ralph Loop](https://github.com/snarktank/ralph)** by [snarktank](https://github.com/snarktank) / [Geoffrey Huntley](https://github.com/ghuntley) — The autonomous PRD-driven execution loop
 
 This project wouldn't exist without their work. We just couldn't stop ourselves from combining them.
